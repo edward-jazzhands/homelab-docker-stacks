@@ -1,0 +1,54 @@
+services:
+  rclone-dropbox:
+    image: rclone/rclone:latest
+    container_name: rclone-dropbox
+    restart: unless-stopped
+    volumes:
+      - ${DATA_DIR}/rclone-config:/config/rclone
+      - ${DATA_DIR}/cloud-drives/dropbox:/data/dropbox:shared
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    devices:
+      - /dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    user: "1000:1000"
+    command: mount dropbox: /data/dropbox --allow-other --vfs-cache-mode full
+
+  rclone-google-drive:
+    image: rclone/rclone:latest
+    container_name: rclone-google-drive
+    restart: unless-stopped
+    volumes:
+      - ${DATA_DIR}/rclone-config:/config/rclone
+      - ${DATA_DIR}/cloud-drives/google-drive:/data/google-drive:shared
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    devices:
+      - /dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    user: "1000:1000"
+    command: mount google-drive: /data/google-drive --allow-other --vfs-cache-mode full
+
+  rclone-onedrive:
+    image: rclone/rclone:latest
+    container_name: rclone-onedrive
+    restart: unless-stopped
+    volumes:
+      - ${DATA_DIR}/rclone-config:/config/rclone
+      - ${DATA_DIR}/cloud-drives/onedrive:/data/onedrive:shared
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    devices:
+      - /dev/fuse
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    user: "1000:1000"
+    command: mount onedrive: /data/onedrive --allow-other --vfs-cache-mode full

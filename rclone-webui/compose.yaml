@@ -1,0 +1,32 @@
+services:
+  rclone-webui:
+    image: rclone/rclone:latest
+    container_name: rclone-webui
+    volumes:
+      - ${DATA_DIR}/rclone-config:/config/rclone
+    user: ${PUID}:${PGID}
+    ports:
+      - ${WEB_UI_PORT}:5572
+    command:
+      - rcd
+      - --rc-web-gui
+      - --rc-web-gui-no-open-browser
+      - --rc-addr
+      - :5572
+      - --rc-user
+      - ${USERNAME}
+      - --rc-pass
+      - ${PASSWORD}
+      - --cache-dir=/config/rclone/webui-cache
+
+  # Use this service for interactive configuration on the CLI over SSH
+  rclone-config:
+    image: rclone/rclone:latest
+    container_name: rclone-config
+    volumes:
+      - ${DATA_DIR}/rclone-config:/config/rclone
+    user: ${PUID}:${PGID}
+    stdin_open: true
+    tty: true
+    command: config
+    profiles: ["config"]
