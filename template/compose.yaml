@@ -1,0 +1,102 @@
+services:
+  myservice:
+    image: group/imagename:latest
+    platform: linux/amd64
+    # Example running as root:
+    user: 0:0
+    # Generally want privleged false unless
+    privileged: false
+    restart: unless-stopped
+    shm_size: 64M
+    # Generally don't want stdin or tty
+    stdin_open: false
+    tty: false
+    environment:
+      TZ: America/Los_Angeles
+      UMASK: "002"
+      UMASK_SET: "002"
+    # If we're running as root (or some other user)
+    # we need to add the user to the supplementary groups to be able to
+    # access their files in the data pool
+    group_add:
+      - 1000
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - KILL
+      - NET_ADMIN
+      - NET_BIND_SERVICE
+      - NET_RAW
+      - SETFCAP
+      - SETGID
+      - SETPCAP
+      - SETUID
+      - SYS_NICE
+      - SYS_TIME
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4096M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_interval: 2s
+      start_period: 15s
+      test:
+        - CMD
+        - timeout
+        - "1"
+        - bash
+        - -c
+        - cat < /dev/null > /dev/tcp/127.0.0.1/20720
+      timeout: 5s
+    ports:
+      - mode: ingress
+        protocol: tcp
+        published: 20720
+        target: 20720
+      - mode: ingress
+        protocol: tcp
+        published: 53
+        target: 53
+      - mode: ingress
+        protocol: udp
+        published: 53
+        target: 53
+    volumes:
+      - bind:
+          create_host_path: false
+          # private means that the volume is only visible to the container
+          # and not to the host
+          propagation: rprivate
+        read_only: false
+        source: /mnt/data_pool_1/brents-data/myapp-data/folder1
+        target: /my-data/folder1
+        type: bind
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: /mnt/data_pool_1/brents-data/myapp-data/folder2
+        target: /my-data/folder2
+        type: bind
+volumes: {}
+x-portals:
+  - host: 0.0.0.0
+    name: Web UI
+    path: /admin/
+    port: 20720
+    scheme: http
+x-notes: |
+  # Pi-hole
+  ### Container: [pihole]
+  #### Running user/group(s)
+  - User: root - Group: root - Supplementary Groups: apps
+  #### Security option [no-new-privileges] is not set
+  - Processes can gain additional privileges through setuid/setgid binaries
+  - Can potentially allow privilege escalation attacks within the container
+networks: {}
