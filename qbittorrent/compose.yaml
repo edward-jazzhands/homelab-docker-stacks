@@ -1,0 +1,85 @@
+services:
+  qbittorrent:
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4096M
+    environment:
+      GID: ${PUID}
+      GROUP_ID: ${PGID}
+      NVIDIA_VISIBLE_DEVICES: void
+      PGID: ${PGID}
+      PUID: ${PUID}
+      QBT_TORRENTING_PORT: ${TORRENT_PORT}
+      QBT_WEBUI_PORT: ${WEB_UI_PORT}
+      TZ: America/Los_Angeles
+      UID: ${PUID}
+      UMASK: 002
+      UMASK_SET: 002
+      USER_ID: ${PUID}
+    group_add:
+      - ${PGID}
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_interval: 2s
+      start_period: 15s
+      test:
+        - CMD
+        - curl
+        - '--request'
+        - GET
+        - '--silent'
+        - '--output'
+        - /dev/null
+        - '--show-error'
+        - '--fail'
+        - http://127.0.0.1:${WEB_UI_PORT}/
+      timeout: 5s
+    image: ghcr.io/home-operations/qbittorrent:5.1.4
+    platform: linux/amd64
+    ports:
+      - mode: ingress
+        protocol: tcp
+        published: ${WEB_UI_PORT}
+        target: ${WEB_UI_PORT}
+      - mode: ingress
+        protocol: tcp
+        published: ${TORRENT_PORT}
+        target: ${TORRENT_PORT}
+      - mode: ingress
+        protocol: udp
+        published: ${TORRENT_PORT}
+        target: ${TORRENT_PORT}
+    privileged: False
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges=true
+    stdin_open: False
+    tty: False
+    user: '${PUID}:${PGID}'
+    volumes:
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: ${DATA_DIR}/qbittorrent-data
+        target: /config
+        type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: ${DATA_DIR}/torrents
+        target: /downloads
+        type: bind
+volumes: {}
+x-portals:
+  - host: 0.0.0.0
+    name: Web UI
+    path: /
+    port: ${WEB_UI_PORT}
+    scheme: http
