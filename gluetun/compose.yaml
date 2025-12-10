@@ -1,8 +1,8 @@
----
 services:
   gluetun:
     image: qmcgaw/gluetun
-    # container_name: gluetun
+    platform: linux/amd64
+    container_name: gluetun
     # line above must be uncommented to allow external containers to connect.
     # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/connect-a-container-to-gluetun.md#external-container-to-gluetun
     cap_add:
@@ -14,23 +14,31 @@ services:
       - 8388:8388/tcp # Shadowsocks
       - 8388:8388/udp # Shadowsocks
     volumes:
-      - /yourpath:/gluetun
+      - ${DATA_DIR}:/gluetun
     environment:
       # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
-      - VPN_TYPE=openvpn
-      - VPN_SERVICE_PROVIDER=protonvpn
-      - SERVER_COUNTRIES=Netherlands
+      VPN_TYPE: wireguard
+      VPN_SERVICE_PROVIDER: protonvpn
+      SERVER_COUNTRIES: Netherlands,United States
+      FREE_ONLY: on
+      TZ: America/Los_Angeles
+      HTTPPROXY: on
+      HTTPPROXY_LOG: on
+      HTTPPROXY_USER: ${HTTPPROXY_USER}
+      HTTPPROXY_PASSWORD: ${HTTPPROXY_PASSWORD}
       # OpenVPN:
-      # - OPENVPN_USER=${OPENVPN_USERNAME}
-      # - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
+      # OPENVPN_USER: ${OPENVPN_USERNAME}
+      # OPENVPN_PASSWORD: ${OPENVPN_PASSWORD}
       # Wireguard:
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      WIREGUARD_PRIVATE_KEY: ${WIREGUARD_PRIVATE_KEY}
+      WIREGUARD_ADDRESSES: ${WIREGUARD_ADDRESSES}
+      # WIREGUARD_PUBLIC_KEY: ${WIREGUARD_PUBLIC_KEY}
+      # WIREGUARD_ENDPOINT_IP: ${WIREGUARD_ENDPOINT_IP}
+      # WIREGUARD_ENDPOINT_PORT: ${WIREGUARD_ENDPOINT_PORT}
       # Timezone for accurate log times
-      - TZ=America/Los_Angeles
+      
       # Server list updater
       # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
-      - UPDATER_PERIOD=
-      - FREE_ONLY=on
-      - PORT_FORWARD_ONLY=on
-      - VPN_PORT_FORWARDING=on
+      # UPDATER_PERIOD: 
+      # PORT_FORWARD_ONLY: on
+      # VPN_PORT_FORWARDING: on
