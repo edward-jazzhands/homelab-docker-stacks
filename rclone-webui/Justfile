@@ -1,8 +1,0 @@
-# There's two ways to configure rclone:
-# 1. Use the Web UI to configure rclone
-# 2. Run `just config` to use the docker-compose run command (for config
-#    over SSH). This spins up a temporary version of the rclone container.
-
-# Start rclone-config service with docker-compose run
-config:
-    docker-compose run --rm rclone-config

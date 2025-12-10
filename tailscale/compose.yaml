@@ -1,0 +1,74 @@
+services:
+  tailscale:
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_MODULE
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4096M
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      NVIDIA_VISIBLE_DEVICES: void
+      TS_ACCEPT_DNS: 'false'
+      TS_AUTHKEY: ${AUTH_KEY}
+      TS_AUTH_ONCE: 'true'
+      TS_HOSTNAME: truenas-scale
+      TS_SOCKET: /var/run/tailscale/tailscaled.sock
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: 'false'
+      TZ: America/Los_Angeles
+      UMASK: '002'
+      UMASK_SET: '002'
+    group_add:
+      - 1000
+      - 568
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_interval: 2s
+      start_period: 15s
+      test: tailscale status
+      timeout: 5s
+    image: ghcr.io/tailscale/tailscale:latest
+    network_mode: host
+    platform: linux/amd64
+    privileged: False
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges=true
+    stdin_open: False
+    tmpfs:
+      - /var/run/tailscale:mode=0755
+    tty: False
+    volumes:
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: /mnt/data_pool_1/brents-data/tailscale-data
+        target: /var/lib/tailscale
+        type: bind
+volumes: {}
+x-notes: >
+  # Tailscale
+  ### Container: [tailscale]
+  #### Running user/group(s)
+
+  - User: unknown
+  - Group: unknown
+  - Supplementary Groups: apps
+
+  #### Passing Host Files, Devices, or Sockets into the Container
+
+  - TUN Device (/dev/net/tun) - (Read/Write)
+
+x-portals: []
