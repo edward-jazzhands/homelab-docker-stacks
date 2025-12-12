@@ -1,5 +1,14 @@
 services:
   pihole:
+    image: pihole/pihole:2025.11.1
+    platform: linux/amd64
+    privileged: false
+    restart: unless-stopped
+    shm_size: 64M
+    stdin_open: false
+    tty: false
+    # Must run as root?
+    user: 0:0
     cap_add:
       - CHOWN
       - DAC_OVERRIDE
@@ -22,16 +31,17 @@ services:
           cpus: "2"
           memory: 4096M
     environment:
+      PIHOLE_UID: ${PUID}
+      PIHOLE_GID: ${PGID}
       FTLCONF_dns_listeningMode: all
-      FTLCONF_webserver_api_password: ${PASSWORD}
-      FTLCONF_webserver_port: "20720"
+      FTLCONF_webserver_api_password: "${PASSWORD}"
+      FTLCONF_webserver_port: "${WEB_UI_PORT}"
       NVIDIA_VISIBLE_DEVICES: void
       TZ: America/Los_Angeles
       UMASK: "002"
       UMASK_SET: "002"
     group_add:
-      - 1000
-      - 568
+      - ${PGID}
     healthcheck:
       interval: 30s
       retries: 5
@@ -43,15 +53,13 @@ services:
         - "1"
         - bash
         - -c
-        - cat < /dev/null > /dev/tcp/127.0.0.1/20720
+        - cat < /dev/null > /dev/tcp/127.0.0.1/${WEB_UI_PORT}
       timeout: 5s
-    image: pihole/pihole:2025.11.1
-    platform: linux/amd64
     ports:
       - mode: ingress
         protocol: tcp
-        published: 20720
-        target: 20720
+        published: ${WEB_UI_PORT}
+        target: ${WEB_UI_PORT}
       - mode: ingress
         protocol: tcp
         published: 53
@@ -60,25 +68,19 @@ services:
         protocol: udp
         published: 53
         target: 53
-    privileged: false
-    restart: unless-stopped
-    shm_size: 64M
-    stdin_open: false
-    tty: false
-    user: 0:0
     volumes:
       - bind:
           create_host_path: false
           propagation: rprivate
         read_only: false
-        source: /mnt/data_pool_1/brents-data/pihole-data/dnsmasq
+        source: ${DATA_DIR}/dnsmasq
         target: /etc/dnsmasq.d
         type: bind
       - bind:
           create_host_path: false
           propagation: rprivate
         read_only: false
-        source: /mnt/data_pool_1/brents-data/pihole-data/config
+        source: ${DATA_DIR}/config
         target: /etc/pihole
         type: bind
 volumes: {}
@@ -86,14 +88,6 @@ x-portals:
   - host: 0.0.0.0
     name: Web UI
     path: /admin/
-    port: 20720
+    port: ${WEB_UI_PORT}
     scheme: http
-x-notes: |
-  # Pi-hole
-  ### Container: [pihole]
-  #### Running user/group(s)
-  - User: root - Group: root - Supplementary Groups: apps
-  #### Security option [no-new-privileges] is not set
-  - Processes can gain additional privileges through setuid/setgid binaries
-  - Can potentially allow privilege escalation attacks within the container
 networks: {}
