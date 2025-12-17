@@ -1,0 +1,94 @@
+services:
+  jdownloader2:
+    image: ghcr.io/jaymoulin/jdownloader:latest
+    container_name: jdownloader2
+    platform: linux/amd64
+    privileged: False
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges=true
+    stdin_open: False
+    tty: False
+    user: '${PUID}:${PGID}'
+    cap_drop:
+      - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4096M
+    environment:
+      GID: ${PUID}
+      GROUP_ID: ${PUID}
+      MYJD_DEVICE_NAME: truenas
+      MYJD_PASSWORD: ${PASSWORD}
+      MYJD_USER: ${USERNAME}
+      NVIDIA_VISIBLE_DEVICES: void
+      PGID: ${PGID}
+      PUID: ${PUID}
+      TZ: Etc/UTC
+      UID: ${PUID}
+      UMASK: '002'
+      UMASK_SET: '002'
+      USER_ID: ${PUID}
+      XDG_DOWNLOAD_DIR: /opt/JDownloader/Downloads
+    #   FILE_MYJD_USER: myjd-user #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+    #   FILE_MYJD_PASSWORD: myjd-password #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+    #   VMARGS: -Xmx2g #optional
+    group_add:
+      - ${PGID}
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_interval: 2s
+      start_period: 15s
+      test: pgrep java
+      timeout: 5s
+    ports:
+        - 3129:3129 
+    volumes:
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: ${DATA_DIR}/downloads
+        target: /opt/JDownloader/Downloads
+        type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: ${DATA_DIR}/config
+        target: /opt/JDownloader/app/cfg
+        type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: ${DATA_DIR}/logs
+        target: /opt/JDownloader/app/logs
+        type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: False
+        source: ${DATA_DIR}/extensions
+        target: /opt/JDownloader/app/extensions
+        type: bind
+      - bind:
+          create_host_path: False
+          propagation: rprivate
+        read_only: True
+        source: /etc/localtime
+        target: /etc/localtime
+        type: bind
+    # secrets:
+    #     - myjd-user #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+    #     - myjd-password #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+
+volumes: {}
+# secrets:
+#   myjd-user: #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+#     file: ~/jdownloader/secrets/myjd_user.txt
+#   myjd-password: #optional (see [Identify](https://github.com/jaymoulin/docker-jdownloader#identify))
+#     file: ~/jdownloader/secrets/myjd_password.txt
