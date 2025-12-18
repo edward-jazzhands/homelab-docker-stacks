@@ -25,7 +25,7 @@ services:
       PGID: ${PGID}
       QBT_TORRENTING_PORT: ${TORRENT_PORT}
       QBT_WEBUI_PORT: ${WEB_UI_PORT}
-      TZ: America/Los_Angeles
+      TZ: ${TIMEZONE}
       UMASK: 002
       UMASK_SET: 002
       NVIDIA_VISIBLE_DEVICES: void
@@ -48,23 +48,23 @@ services:
         - '--fail'
         - http://127.0.0.1:${WEB_UI_PORT}/
       timeout: 5s
-    network_mode: "container:gluetun"
-    # NOTE: Ports moved to gluetun, access via gluetun now
-    # ports:
-    #   - mode: ingress
-    #     protocol: tcp
-    #     published: ${WEB_UI_PORT}
-    #     target: 30024
-      # This section is only needed if the VPN you're using
-      # supports port forwarding (often not available in free tier)
-      # - mode: ingress
-      #   protocol: tcp
-      #   published: ${TORRENT_PORT}
-      #   target: 51413
-      # - mode: ingress
-      #   protocol: udp
-      #   published: ${TORRENT_PORT}
-      #   target: 51413
+    # Uncomment network_mode if using gluetun:
+    # network_mode: "container:gluetun"
+    # NOTE: Ports move to gluetun, access via gluetun if using gluetun
+    ports:
+      - mode: ingress
+        protocol: tcp
+        published: ${WEB_UI_PORT}
+        target: 30024
+      # This section is only needed if using port forwarding:
+      - mode: ingress
+        protocol: tcp
+        published: ${TORRENT_PORT}
+        target: 51413
+      - mode: ingress
+        protocol: udp
+        published: ${TORRENT_PORT}
+        target: 51413
     volumes:
       - bind:
           create_host_path: False
