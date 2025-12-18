@@ -1,0 +1,24 @@
+services: 
+  pyload:
+    container_name: pyload
+    image: lscr.io/linuxserver/pyload-ng:latest
+    ports:
+      - ${WEB_UI_PORT}:8000
+      - ${CLICK_N_LOAD_PORT}:9666
+    volumes:
+      - ${DATA_DIR}/downloads:/downloads
+      - ${DATA_DIR}/config:/config
+    environment:
+      PGID: ${PGID}
+      PUID: ${PUID}
+      UMASK: "002"
+      UMASK_SET: "002"
+      TZ: ${TIMEZONE}
+    restart: unless-stopped
+    group_add:
+      - 1000
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4096M 
