@@ -1,6 +1,6 @@
 services:
   myservice:
-    image: group/imagename:latest
+    image: programming-toolkit:latest
     platform: linux/amd64
     # Example running as root:
     user: 0:0
@@ -16,13 +16,15 @@ services:
       UMASK: "002"
       UMASK_SET: "002"
       PUID: ${PUID}
-      GUID: ${GUID}
+      PGID: ${PGID}
+      PASSWORD: ${PASSWORD}
     # If we're running as root (or some other user)
-    # we need to add the user to the supplementary groups to be able to
+    # we need to add the user's group to the supplementary groups to be able to
     # access their files in the data pool
     group_add:
-      - ${PUID}
+      - ${PGID}
     cap_add:
+      - AUDIT_WRITE
       - CHOWN
       - DAC_OVERRIDE
       - FOWNER
@@ -36,6 +38,7 @@ services:
       - SETUID
       - SYS_NICE
       - SYS_TIME
+      - SYS_CHROOT
     cap_drop:
       - ALL
     deploy:
@@ -54,34 +57,35 @@ services:
         - "1"
         - bash
         - -c
-        - cat < /dev/null > /dev/tcp/127.0.0.1/${WEB_UI_PORT}
+        - cat < /dev/null > /dev/tcp/127.0.0.1/20720
       timeout: 5s
     ports:
+      # admin panel
       - mode: ingress
         protocol: tcp
-        published: ${WEB_UI_PORT}     # published is external
-        target: 5555                  # target is internal 
-
+        published: ${WEB_UI_PORT}
+        target: 5000
+      # code-server
+      - mode: ingress
+        protocol: tcp
+        published: ${WEB_UI_PORT2}
+        target: 5001
+      - mode: ingress
+        protocol: tcp
+        published: ${SSH_PORT}
+        target: 22
     volumes:
       - bind:
           create_host_path: false
           propagation: rprivate
         read_only: false
-        source: ${DATA_DIR}/folder1
-        target: /container-filesystem/folder1
+        source: ${DATA_DIR}/workspace
+        target: /workspace
         type: bind
       - bind:
           create_host_path: false
           propagation: rprivate
         read_only: false
-        source: ${DATA_DIR}/folder2
-        target: /container-filesystem/folder2
+        source: ${DATA_DIR}/home
+        target: /home/devuser
         type: bind
-volumes: {}
-x-portals:
-  - host: 0.0.0.0
-    name: Web UI
-    path: /admin/
-    port: ${WEB_UI_PORT}
-    scheme: http
-networks: {}
