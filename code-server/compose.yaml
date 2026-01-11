@@ -15,24 +15,6 @@ services:
       UMASK_SET: "002"
       PASSWORD: "${PASSWORD}"
       # DOCKER_USER: "${USERNAME}"
-    # group_add:
-    #   - ${GID}
-    # cap_add:
-    #   - CHOWN
-    #   - DAC_OVERRIDE
-    #   - FOWNER
-    #   - KILL
-    #   - NET_ADMIN
-    #   - NET_BIND_SERVICE
-    #   - NET_RAW
-    #   - SETFCAP
-    #   - SETGID
-    #   - SETPCAP
-    #   - SETUID
-    #   - SYS_NICE
-    #   - SYS_TIME
-    # cap_drop:
-    #   - ALL
     deploy:
       resources:
         limits:
@@ -57,19 +39,13 @@ services:
         published: ${WEB_UI_PORT}     # published is external
         target: 8080                  # target is internal 
     volumes:
+      # Bind mount entire home dir
       - bind:
           create_host_path: false
           propagation: rprivate
         read_only: false
-        source: ${DATA_DIR}/config
-        target: /home/coder/.config
-        type: bind
-      - bind:
-          create_host_path: false
-          propagation: rprivate
-        read_only: false
-        source: ${DATA_DIR}/code-server-data
-        target: /home/coder/.local/share
+        source: ${DATA_DIR}/code-server
+        target: /home/coder
         type: bind
       - bind:
           create_host_path: false
