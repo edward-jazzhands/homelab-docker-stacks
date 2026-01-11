@@ -1,0 +1,81 @@
+services:
+  code-server:
+    container_name: code-server
+    image: codercom/code-server:latest
+    platform: linux/amd64
+    user: "${UID:-1000}:${GID:-1000}"
+    privileged: false
+    restart: unless-stopped
+    shm_size: 64M
+    stdin_open: false
+    tty: false
+    environment:
+      TZ: America/Los_Angeles
+      UMASK: "002"
+      UMASK_SET: "002"
+      PASSWORD: "${PASSWORD}"
+      # DOCKER_USER: "${USERNAME}"
+    # group_add:
+    #   - ${GID}
+    # cap_add:
+    #   - CHOWN
+    #   - DAC_OVERRIDE
+    #   - FOWNER
+    #   - KILL
+    #   - NET_ADMIN
+    #   - NET_BIND_SERVICE
+    #   - NET_RAW
+    #   - SETFCAP
+    #   - SETGID
+    #   - SETPCAP
+    #   - SETUID
+    #   - SYS_NICE
+    #   - SYS_TIME
+    # cap_drop:
+    #   - ALL
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          memory: 6144M
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_interval: 2s
+      start_period: 15s
+      test:
+        - CMD
+        - timeout
+        - "1"
+        - bash
+        - -c
+        - cat < /dev/null > /dev/tcp/127.0.0.1/8080
+      timeout: 5s
+    ports:
+      - mode: ingress
+        protocol: tcp
+        published: ${WEB_UI_PORT}     # published is external
+        target: 8080                  # target is internal 
+    volumes:
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: ${DATA_DIR}/config
+        target: /home/coder/.config
+        type: bind
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: ${DATA_DIR}/code-server-data
+        target: /home/coder/.local/share
+        type: bind
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: ${DATA_DIR}/workspace
+        target: /workspace
+        type: bind
+networks: {}
