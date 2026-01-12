@@ -3,7 +3,7 @@ services:
     container_name: code-server
     image: codercom/code-server:latest
     platform: linux/amd64
-    user: "${UID:-1000}:${GID:-1000}"
+    user: ${UID:-1000}:${GID:-1000}
     privileged: false
     restart: unless-stopped
     shm_size: 64M
@@ -13,7 +13,7 @@ services:
       TZ: America/Los_Angeles
       UMASK: "002"
       UMASK_SET: "002"
-      PASSWORD: "${PASSWORD}"
+      PASSWORD: ${PASSWORD}
       # DOCKER_USER: "${USERNAME}"
     deploy:
       resources:
@@ -36,8 +36,8 @@ services:
     ports:
       - mode: ingress
         protocol: tcp
-        published: ${WEB_UI_PORT}     # published is external
-        target: 8080                  # target is internal 
+        published: ${WEB_UI_PORT}
+        target: 8080
     volumes:
       # Bind mount entire home dir
       - bind:
@@ -53,5 +53,12 @@ services:
         read_only: false
         source: ${DATA_DIR}/workspace
         target: /workspace
+        type: bind
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: ${DOCKGE_DIR}/stacks
+        target: /workspace/dockge-stacks
         type: bind
 networks: {}
