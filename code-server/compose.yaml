@@ -1,6 +1,7 @@
 services:
   code-server:
     container_name: code-server
+    hostname: code-server
     image: codercom/code-server:latest
     platform: linux/amd64
     user: ${UID:-1000}:${GID:-1000}
@@ -15,6 +16,13 @@ services:
       UMASK_SET: "002"
       PASSWORD: ${PASSWORD}
       # DOCKER_USER: "${USERNAME}"
+    cap_add:
+      # sys admin is needed to create filesystem mounts while running
+      - SYS_ADMIN
+    security_opt:
+      # Set AppArmor to unconfined (disabled) to allow making fs mounts
+      - apparmor:unconfined
+      # - seccomp:unconfined
     deploy:
       resources:
         limits:

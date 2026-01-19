@@ -9,6 +9,8 @@ services:
     tty: false
     # Must run as root?
     user: 0:0
+    cap_drop:
+      - ALL
     cap_add:
       - CHOWN
       - DAC_OVERRIDE
@@ -23,8 +25,6 @@ services:
       - SETUID
       - SYS_NICE
       - SYS_TIME
-    cap_drop:
-      - ALL
     deploy:
       resources:
         limits:
