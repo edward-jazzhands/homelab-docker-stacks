@@ -1,0 +1,27 @@
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - mode: ingress
+        protocol: tcp
+        published: ${PORT}
+        target: 11434
+    # volumes:
+    #   - ollama:/root/.ollama
+    volumes:
+      - bind:
+          create_host_path: false
+          propagation: rprivate
+        read_only: false
+        source: ${DATA_DIR}
+        target: /root/.ollama
+        type: bind
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "4"
+    #       memory: 4096M
