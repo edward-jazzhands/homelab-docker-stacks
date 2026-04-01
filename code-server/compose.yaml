@@ -46,6 +46,18 @@ services:
         protocol: tcp
         published: ${WEB_UI_PORT}
         target: 8080
+      - mode: ingress
+        protocol: tcp
+        published: ${VITE_DEV_PORT}
+        target: 5173
+      - mode: ingress
+        protocol: tcp
+        published: ${XTRA1_DEV_PORT}
+        target: 5174
+      - mode: ingress
+        protocol: tcp
+        published: ${XTRA2_DEV_PORT}
+        target: 5175
     volumes:
       # Bind mount entire home dir
       - bind:
