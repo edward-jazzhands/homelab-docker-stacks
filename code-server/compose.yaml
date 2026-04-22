@@ -10,6 +10,9 @@ services:
     shm_size: 64M
     stdin_open: false
     tty: false
+    networks:
+      - proxy
+      - backend
     environment:
       TZ: America/Los_Angeles
       UMASK: "002"
@@ -81,4 +84,11 @@ services:
         source: ${DOCKGE_DIR}/stacks
         target: /workspace/dockge-stacks
         type: bind
-networks: {}
+
+networks:
+  proxy:
+    external: true
+    name: eventacarta-proxy
+  backend:
+    external: true
+    name: eventacarta-backend
