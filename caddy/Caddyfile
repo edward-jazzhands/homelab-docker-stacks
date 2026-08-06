@@ -1,0 +1,68 @@
+# LOCAL / DEVELOPMENT (self-signed cert, no domain needed)
+# Caddy auto-installs a local CA root on first run.
+
+# FORMAT:
+# <where Caddy listens> {
+#     reverse_proxy <where Caddy forwards to>
+# }
+
+# The default here is 'localhost:8443'. This assumes you're gonna access the site
+# from the same machine Caddy is running on, using port 8443. If you're running
+# Caddy on a private home server, you need to use 0.0.0.0:<port> as you would doing
+# any local web dev stuff.
+
+# You can also use the server's IP address on your network if you want to be more
+# restrictive, such as 192.168.1.100:8443. The Tailscale magic DNS would also work.
+
+# If you have more than one web service you need to proxy, you have to
+# add each one individually:
+
+# :9002 {
+#     reverse_proxy my-app2:5678
+
+# ? The line below is for enabling HTTPS locally.
+# tls internal
+
+# You will have to copy the root cert to your local machine, 
+# install it in your browser, make additions to your /etc/hosts file, etc.
+
+# }
+
+# The above example is using the service names set in Docker, and assuming that
+# Caddy will be on the same internal docker network.
+
+(logging) {
+	log {
+		output stdout
+		format json
+	}
+}
+
+# ubuntu-server-vm.tail85e705.ts.net {
+# 	import logging
+# 	tls {
+# 		get_certificate tailscale
+# 	}
+# 	reverse_proxy ubuntu-server-vm:8080
+# }
+
+# TrueNAS Web UI
+truenas-scale.tail85e705.ts.net {
+	import logging
+	tls {
+		get_certificate tailscale
+	}
+	reverse_proxy 127.0.0.1:8080
+}
+
+# Code-Server
+truenas-scale.tail85e705.ts.net:9000 {
+	import logging
+	tls {
+		get_certificate tailscale
+	}
+	reverse_proxy http://192.168.1.64:8080 {
+		header_up Host {upstream_hostport}
+		header_up X-Forwarded-Host {host}
+	}
+}

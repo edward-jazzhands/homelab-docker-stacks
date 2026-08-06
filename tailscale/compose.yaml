@@ -12,22 +12,22 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
+          cpus: "2"
           memory: 4096M
     devices:
       - /dev/net/tun:/dev/net/tun
     environment:
       NVIDIA_VISIBLE_DEVICES: void
-      TS_ACCEPT_DNS: 'false'
+      TS_ACCEPT_DNS: "false"
       TS_AUTHKEY: ${AUTH_KEY}
-      TS_AUTH_ONCE: 'true'
+      TS_AUTH_ONCE: "true"
       TS_HOSTNAME: truenas-scale
       TS_SOCKET: /var/run/tailscale/tailscaled.sock
       TS_STATE_DIR: /var/lib/tailscale
-      TS_USERSPACE: 'false'
-      TZ: America/Los_Angeles
-      UMASK: '002'
-      UMASK_SET: '002'
+      TS_USERSPACE: "false"
+      TZ: ${TZ}
+      UMASK: "002"
+      UMASK_SET: "002"
     group_add:
       - 1000
       - 568
@@ -41,34 +41,17 @@ services:
     image: ghcr.io/tailscale/tailscale:latest
     network_mode: host
     platform: linux/amd64
-    privileged: False
+    privileged: false
     restart: unless-stopped
     security_opt:
       - no-new-privileges=true
-    stdin_open: False
-    tmpfs:
-      - /var/run/tailscale:mode=0755
-    tty: False
+    stdin_open: false
+    tty: false
     volumes:
-      - bind:
-          create_host_path: False
-          propagation: rprivate
-        read_only: False
-        source: /mnt/data_pool_1/brents-data/tailscale-data
-        target: /var/lib/tailscale
-        type: bind
-volumes: {}
-x-notes: >
-  # Tailscale
-  ### Container: [tailscale]
-  #### Running user/group(s)
-
-  - User: unknown
-  - Group: unknown
-  - Supplementary Groups: apps
-
-  #### Passing Host Files, Devices, or Sockets into the Container
-
-  - TUN Device (/dev/net/tun) - (Read/Write)
-
-x-portals: []
+      # this volume is for general tailscale data. By saving it on the NAS,
+      # we can restore the tailscale server state without needing to re-auth:
+      - ${DATA_DIR}:/var/lib/tailscale
+      # this volume is for the socket. It allows other containers to access the
+      # tailscale daemon. Caddy in particular needs this.
+      - /var/run/tailscale:/var/run/tailscale
+networks: {}

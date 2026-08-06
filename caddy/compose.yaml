@@ -1,0 +1,13 @@
+services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      # Bind mount in the tailscale socket, so that Caddy can access it:
+      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+      # general data volumes, for Caddy to store its data:
+      - ${DATA_DIR}/data:/data
+      - ${DATA_DIR}/config:/config
+    network_mode: host

@@ -1,0 +1,55 @@
+services:
+  truenas-api-conduit:
+    image: ghcr.io/edward-jazzhands/truenas-api-conduit:latest
+    user: "${UID:-1000}:${GID:-1000}"
+    read_only: true
+    cap_drop:
+      - ALL
+    cap_add:
+      # this allows the container to use raw sockets for ping testing
+      - NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+    tmpfs:
+      - /tmp
+    volumes:
+      # used for storing encrypted API keys (using set-key command, see docs)
+      - truenas_api_conduit_storage:/home/appuser/.local/share/truenas-api-conduit
+    ports:
+      - ${TRUENAS_CONDUIT_PORT}:${TRUENAS_CONDUIT_PORT}
+    environment:
+      TZ: America/Los_Angeles
+      TRUENAS_CONDUIT_HOST: 0.0.0.0:${TRUENAS_CONDUIT_PORT}
+      TRUENAS_ADDRESS: host.docker.internal:${TRUENAS_HTTPS_PORT}
+      TRUENAS_API_KEY: ${TRUENAS_API_KEY}
+      TRUENAS_VALIDATE_CERTS: ${TRUENAS_VALIDATE_CERTS}
+      TRUENAS_LOG_LEVEL: ${TRUENAS_LOG_LEVEL}
+      # TRUENAS_CERT_PATH: ${TRUENAS_CERT_PATH}
+      # TRUENAS_API_ROUTE: ${TRUENAS_API_ROUTE}
+      # TRUENAS_REQUEST_HEADER: ${TRUENAS_REQUEST_HEADER}
+      # TRUENAS_CRYPT_KEY: ${TRUENAS_CRYPT_KEY}
+
+volumes:
+  truenas_api_conduit_storage:
+
+# secrets:
+#   truenas_api_key:
+#     file: "${SECRETS_DIR}/truenas_api_key"
+#   truenas_crypt_key:
+#     file: "${SECRETS_DIR}/truenas_crypt_key"
+
+# NOTE: You can use an external docker network to restrict access to this
+# service to only other containers on the same network. This can be very
+# useful for security and isolation. Combine this with a read-only
+# API key for maximum security.
+
+# networks:
+#   truenas-api-conduit:
+#     name: truenas-api-conduit
