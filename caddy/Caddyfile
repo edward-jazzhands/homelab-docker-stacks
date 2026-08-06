@@ -38,14 +38,6 @@
 	}
 }
 
-# ubuntu-server-vm.tail85e705.ts.net {
-# 	import logging
-# 	tls {
-# 		get_certificate tailscale
-# 	}
-# 	reverse_proxy ubuntu-server-vm:8080
-# }
-
 # TrueNAS Web UI
 truenas-scale.tail85e705.ts.net {
 	import logging
@@ -61,8 +53,5 @@ truenas-scale.tail85e705.ts.net:9000 {
 	tls {
 		get_certificate tailscale
 	}
-	reverse_proxy http://192.168.1.64:8080 {
-		header_up Host {upstream_hostport}
-		header_up X-Forwarded-Host {host}
-	}
+	reverse_proxy http://192.168.1.64:8080
 }
