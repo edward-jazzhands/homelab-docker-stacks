@@ -1,12 +1,15 @@
 services:
   caddy:
+    depends_on:
+      tailscale:
+        condition: service_healthy
     image: caddy:latest
     container_name: caddy
     restart: unless-stopped
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-      # Bind mount in the tailscale socket, so that Caddy can access it:
-      - /var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock
+      # Bind mount in the tailscale socket dir, so that Caddy can access it:
+      - /var/run/tailscale:/var/run/tailscale
       # general data volumes, for Caddy to store its data:
       - ${DATA_DIR}/data:/data
       - ${DATA_DIR}/config:/config
